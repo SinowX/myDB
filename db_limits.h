@@ -1,6 +1,7 @@
 #ifndef __DB_LIMITS
 #define __DB_LIMITS
 
+#define BUF_SZ 4096
 
 
 // table name 存储大小
@@ -22,7 +23,7 @@
 #define COLUMN_ATTR_SIZE 128
 
 
-#define MAX_COLUMN 64 // 每个数据表最大列数
+#define MAX_COLUMN 16 // 每个数据表最大列数
 
 //索引B+树的叶子结点可定位的最大 row 数量
 //未确定
@@ -48,5 +49,12 @@
 #define MAX_DATA_STORAGE_TABLE 2<<2
 #define MAX_DATA_STORAGE_SIZE 2<<21 // 4MB
 
+
+#define ROW_VALUE_SIZE 2<<7 //256
+
+
+//三叉树保存形式是一个数组
+#define TRIBLE_TREE_LENGTH 41
+#define TRIBLE_TREE_LEAF_LENGTH 27
 
 #endif

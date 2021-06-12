@@ -5,6 +5,12 @@
 #include<fcntl.h>
 #include<errno.h>
 #include<string.h>
+#include<time.h>
+#include<string>
+#include<stack>
+#include<queue>
+#include<math.h>
+
 #include"db_struct.h"
 #include"sql_struct.h"
 #include"ERROR.h"
@@ -18,12 +24,31 @@ class DBMGR{
     private:
         //DBFile 文件描述符
         int fd;
+        //当前DBFile的结尾偏移量
+        off_t cur_offset_end;
         //DB File 文件头
-        DB_Header *db_header;
+        DB_Header db_header;
+
+        //避免频繁使用 malloc free
+        table_meta tb_meta;
+        index_table_info idx_tb_info;
+        data_table_info data_tb_info;
+        index_table idx_tb;
+        data_table data_tb;
+
+        off_t storage_begin;
+
 
         //如果 构造函数打开的DBFile为空，则调用该函数来初始化表结构
         void InitDBFile();
-        
+        void InitIndex(uint8_t col_idx,index_item * idx_itm);
+        void Distribute(uint8_t hashed,index_node * tree_node, off_t offset);
+
+        void LoadInfo(char * tbname);
+
+        value2data_table LocateWithIndex(index_item idx_itm, val_union value);
+
+        void GetTribleTree(index_node *tree);
 
     public:
         //打开DBFile，初始化 fd,db_header
@@ -31,7 +56,7 @@ class DBMGR{
         //创建表
         int CreateTable(char * tbname,CreateAttr *attr);
         //查找
-        char * Select(char * tbname,SelectCondi *condi);
+        char * Select(char * tbname,SelectCol col,SelectCondi *condi);
         //展示数据库中所有表名
         char * ShowTables();
         //展示某个表的列信息
@@ -41,86 +66,9 @@ class DBMGR{
         //增填条目
         int Insert(char * tbname,InsertColVal *col_val);
         //修改条目
-        int Update(char * tbname,UpdataCondi *condi);
+        int Update(char * tbname,char *colname,val_union colvalue,UpdataCondi *condi);
         //删除表
         int DropTable(char * tbname);
         //删除行
         int DropRow(char * tbname,DropRowCondi *condi);
 };
-
-// public start
-
-DBMGR::DBMGR(){
-    int fd;
-    if((fd=open(DB_PATH,O_RDWR|O_CREAT,0644))==-1)
-        pError();
-    
-    this->fd=fd;
-    //获取当前偏移量
-    off_t cur_seek=lseek(this->fd,0,SEEK_END);
-
-    if(cur_seek==-1)
-        pError();
-    else if(cur_seek==0)
-        //DBFile 未初始化
-        this->InitDBFile();
-    //重置偏移量到0
-    if(lseek(this->fd,0,SEEK_SET)==-1)
-        pError();
-    this->db_header=(DB_Header*)malloc(sizeof(DB_Header));
-    if(write(this->fd,this->db_header,sizeof(DB_Header))!=sizeof(DB_Header))
-        pError("Init this.db_header ERROR");
-
-}
-
-//不允许建立空表，每个列必须指定其类型，不可为空
-int DBMGR::CreateTable(char * tbname,CreateAttr *attr){
-    while(attr->next!=NULL)
-    {
-
-    }
-
-}
-char * DBMGR::Select(char * tbname,SelectCondi *condi){
-
-}
-char * DBMGR::ShowTables(){
-
-}
-char * DBMGR::ShowColumns(char * tbname){
-
-}
-char * DBMGR::ShowIndex(char * tbname){
-
-}
-int DBMGR::Insert(char * tbname,InsertColVal *col_val){
-
-}
-int DBMGR::Update(char * tbname,UpdataCondi *condi){
-
-}
-int DBMGR::DropTable(char * tbname){
-
-}
-int DBMGR::DropRow(char * tbname,DropRowCondi *condi){
-
-}
-
-// public end
-
-// private start
-
-void DBMGR::InitDBFile()
-{
-    DB_Header *header=(DB_Header*)malloc(sizeof(DB_Header));
-    header->table_num=0;
-    ssize_t numwrite=write(this->fd,header,sizeof(DB_Header));
-    if(numwrite==-1)
-        pError();
-    else if(numwrite!=sizeof(DB_Header))
-        pError("Write Wrong");
-}
-
-
-
-// private end
