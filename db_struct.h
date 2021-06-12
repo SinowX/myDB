@@ -18,90 +18,6 @@ union val_union{
 #endif
 
 
-// DB_Header start
-
-//文件头保存的 table 条目信息
-typedef struct table_clause{
-    //表名
-    char name[TABLE_NAME_SIZE];
-    //表块条目唯一识别id
-    time_t id;
-    //表块元信息存储位置
-    off_t offset;
-    //索引表数量
-    uint8_t index_num;
-    //数据表数量
-    uint8_t data_num;
-}__table_clause__;
-
-
-
-//文件头 信息
-typedef struct DB_Header{
-    uint8_t table_num;
-
-    //table条目信息数组
-    __table_clause__ clause_array[MAX_TABLE_BLOCK];
-}DB_Header;
-
-
-
-typedef struct table_meta{
-    time_t id;
-    char name[TABLE_NAME_SIZE];
-    off_t index_info_offset;
-    off_t data_info_offset;
-}table_meta;
-
-
-//索引表信息
-typedef struct index_table_info{
-    off_t index_offset;
-    uint8_t clause_num;
-    // off_t index_size;
-    //index_item 在添加
-    // __index_clause__ clause_array[MAX_INDEX_TABLE];  
-} index_table_info;
-
-
-
-//数据表信息
-typedef struct data_table_info{
-    // off_t data_size;
-    off_t data_offset;
-    uint clause_num;
-    // __data_clause__ clause_array[MAX_COLUMN];
-} data_table_info;
-
-//此表的索引表存储块信息
-typedef struct index_table{
-    // 索引表数量
-    uint8_t item_count;
-    // 所有索引表的信息的数组
-    index_item_info item_info[MAX_INDEX_TABLE];
-    //当前此索引表中 storage space 的数量，最大是MAX_INDEX_STORAGE_TABLE
-    uint8_t storage_num;
-    //此索引表中 storage space 数组
-    __storage_info__ storage_table[MAX_INDEX_STORAGE_TABLE];
-
-    // __index_node__ *index_header; // 注意初始化索引 b+ 树
-}index_table;
-
-typedef struct data_table{
-    uint8_t col_num;
-    col_item col_itm[MAX_COLUMN];
-    uint8_t storage_num;
-    __storage_info__ storage_table[MAX_DATA_STORAGE_TABLE];
-    // void *data_field;
-}data_table;
-
-
-
-
-
-
-
-// 索引表节点结构
 typedef struct index_node{
     uint8_t range_left;
     uint8_t range_middle;
@@ -187,5 +103,92 @@ typedef struct storage_index{
 typedef struct storage_data{
     char data[MAX_DATA_STORAGE_SIZE];
 }storage_data;
+
+
+// DB_Header start
+
+//文件头保存的 table 条目信息
+typedef struct table_clause{
+    //表名
+    char name[TABLE_NAME_SIZE];
+    //表块条目唯一识别id
+    time_t id;
+    //表块元信息存储位置
+    off_t offset;
+    //索引表数量
+    uint8_t index_num;
+    //数据表数量
+    uint8_t data_num;
+}__table_clause__;
+
+
+
+//文件头 信息
+typedef struct DB_Header{
+    uint8_t table_num;
+
+    //table条目信息数组
+    __table_clause__ clause_array[MAX_TABLE_BLOCK];
+}DB_Header;
+
+
+
+typedef struct table_meta{
+    time_t id;
+    char name[TABLE_NAME_SIZE];
+    off_t index_info_offset;
+    off_t data_info_offset;
+}table_meta;
+
+
+//索引表信息
+typedef struct index_table_info{
+    off_t index_offset;
+    uint8_t clause_num;
+    // off_t index_size;
+    //index_item 在添加
+    // __index_clause__ clause_array[MAX_INDEX_TABLE];  
+} index_table_info;
+
+
+
+//数据表信息
+typedef struct data_table_info{
+    // off_t data_size;
+    off_t data_offset;
+    uint clause_num;
+    // __data_clause__ clause_array[MAX_COLUMN];
+} data_table_info;
+
+//此表的索引表存储块信息
+typedef struct index_table{
+    // 索引表数量
+    uint8_t item_count;
+    // 所有索引表的信息的数组
+    index_item_info item_info[MAX_INDEX_TABLE];
+    //当前此索引表中 storage space 的数量，最大是MAX_INDEX_STORAGE_TABLE
+    uint8_t storage_num;
+    //此索引表中 storage space 数组
+    __storage_info__ storage_table[MAX_INDEX_STORAGE_TABLE];
+
+    // __index_node__ *index_header; // 注意初始化索引 b+ 树
+}index_table;
+
+typedef struct data_table{
+    uint8_t col_num;
+    col_item col_itm[MAX_COLUMN];
+    uint8_t storage_num;
+    __storage_info__ storage_table[MAX_DATA_STORAGE_TABLE];
+    // void *data_field;
+}data_table;
+
+
+
+
+
+
+
+// 索引表节点结构
+
 
 #endif

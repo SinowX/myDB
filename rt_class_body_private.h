@@ -4,7 +4,8 @@
 
 value2data_table DBMGR::LocateWithIndex(index_item idx_itm, val_union value)
 {
-
+    uint8_t hashed=Hash::Murmur(&value,sizeof(val_union))%27;
+    return idx_itm.table[hashed];
 }
 
 
@@ -62,11 +63,7 @@ void DBMGR::LoadInfo(char * tbname)
 
 
 
-// 将对应的数据偏移量存放到对应的存储区中
-void DBMGR::Distribute(uint8_t hashed, index_node *tree_node, off_t offset)
-{
-    
-}
+
 
 
 void DBMGR::InitDBFile()
@@ -74,11 +71,8 @@ void DBMGR::InitDBFile()
     // header->table_num=0;
     this->db_header.table_num=0;
     
-    ssize_t numwrite=write(this->fd,&this->db_header,sizeof(DB_Header));
-    if(numwrite==-1)
+    if(write(this->fd,&this->db_header,sizeof(DB_Header))==-1)
         pError();
-    else if(numwrite!=sizeof(DB_Header))
-        pError("Write Wrong");
 }
 
 
@@ -98,6 +92,18 @@ void DBMGR::InitIndex(uint8_t col_idx,index_item * idx_itm)
     }
 
 }
+
+
+// 将对应的数据偏移量存放到对应的存储区中
+// hashed 0-26
+// 设计漏洞，没能用上树 :(
+void DBMGR::Distribute(val_union *val,uint8_t hashed, index_item * idx_itm, off_t offset)
+{
+    idx_itm->table[hashed].value2data[idx_itm->table[hashed].count].offset=offset;
+    memcpy(&idx_itm->table[hashed].value2data[idx_itm->table[hashed].count].value,val,sizeof(val_union));
+    idx_itm->table[hashed].count++;
+}
+
 
 void DBMGR::GetTribleTree(index_node *tree)
 {

@@ -42,7 +42,7 @@ class DBMGR{
         //如果 构造函数打开的DBFile为空，则调用该函数来初始化表结构
         void InitDBFile();
         void InitIndex(uint8_t col_idx,index_item * idx_itm);
-        void Distribute(uint8_t hashed,index_node * tree_node, off_t offset);
+        void Distribute(val_union *val,uint8_t hashed,index_item *idx_itm, off_t offset);
 
         void LoadInfo(char * tbname);
 
@@ -71,4 +71,6 @@ class DBMGR{
         int DropTable(char * tbname);
         //删除行
         int DropRow(char * tbname,DropRowCondi *condi);
+        //close and exit
+        void Close();
 };

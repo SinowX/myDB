@@ -3,6 +3,39 @@
 #include<string.h>
 
 namespace Algor{
+
+// KMP 字符串匹配算法——获取部分匹配表
+void GetPartMatchTB(char * str,int arr[])
+{
+    int len=strlen(str);
+    char * substr=(char *)malloc(len*sizeof(char));
+    char * prefix=(char *)malloc(len*sizeof(char));
+    char * suffix=(char *)malloc(len*sizeof(char));
+
+    // for(int i=0;i<len;i++) First Round Can be Ignored
+    for(int i=1;i<len;i++)
+    {
+        // printf("ROUND %d\n",i);
+        strncpy(substr,str,i+1);
+        substr[i+1]='\0';
+        for(int j=0;j<i;j++)
+        {
+            strncpy(prefix,substr,j+1);
+            prefix[j+1]='\0';
+            strncpy(suffix,&substr[strlen(substr)-1-j],j+1);
+            suffix[j+1]='\0';
+
+            // printf("PRE: %s SUF: %s\n",prefix,suffix);
+            if(!strcmp(prefix,suffix))
+            {
+                if(strlen(prefix)>arr[i])
+                    arr[i]=strlen(prefix);
+            }
+        }
+
+    }
+}
+
 int KMP(char *srcstr, char *substr)
 {
     int total_match=0;
@@ -40,37 +73,7 @@ int KMP(char *srcstr, char *substr)
     return total_match;
 }
 
-// KMP 字符串匹配算法——获取部分匹配表
-void GetPartMatchTB(char * str,int arr[])
-{
-    int len=strlen(str);
-    char * substr=(char *)malloc(len*sizeof(char));
-    char * prefix=(char *)malloc(len*sizeof(char));
-    char * suffix=(char *)malloc(len*sizeof(char));
 
-    // for(int i=0;i<len;i++) First Round Can be Ignored
-    for(int i=1;i<len;i++)
-    {
-        // printf("ROUND %d\n",i);
-        strncpy(substr,str,i+1);
-        substr[i+1]='\0';
-        for(int j=0;j<i;j++)
-        {
-            strncpy(prefix,substr,j+1);
-            prefix[j+1]='\0';
-            strncpy(suffix,&substr[strlen(substr)-1-j],j+1);
-            suffix[j+1]='\0';
-
-            // printf("PRE: %s SUF: %s\n",prefix,suffix);
-            if(!strcmp(prefix,suffix))
-            {
-                if(strlen(prefix)>arr[i])
-                    arr[i]=strlen(prefix);
-            }
-        }
-
-    }
-}
 }
 
 

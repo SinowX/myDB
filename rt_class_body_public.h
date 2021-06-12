@@ -13,6 +13,7 @@ DBMGR::DBMGR(){
 
     if(cur_seek==-1)
         pError();
+    // cur_seek说明是刚刚建立的新文件
     else if(cur_seek==0)
         //DBFile 未初始化
         this->InitDBFile();
@@ -21,9 +22,9 @@ DBMGR::DBMGR(){
         pError();
     if(write(this->fd,&this->db_header,sizeof(DB_Header))!=sizeof(DB_Header))
         pError("Init this.db_header ERROR");
-    this->cur_offset_end=lseek(this->fd,0,SEEK_END);
-    if(this->cur_offset_end==-1)
-        pError();
+    // this->cur_offset_end=lseek(this->fd,0,SEEK_END);
+    // if(this->cur_offset_end==-1)
+    //     pError();
 }
 
 //不允许建立空表，每个列必须指定其类型，不可为空
@@ -31,7 +32,7 @@ int DBMGR::CreateTable(char * tbname,CreateAttr *attr){
     //初始化 table_meta
     this->tb_meta.id=time(NULL);
     strcpy(this->tb_meta.name,tbname);
-    this->tb_meta.index_info_offset=this->cur_offset_end+sizeof(this->tb_meta);
+    // this->tb_meta.index_info_offset=this->cur_offset_end+sizeof(this->tb_meta);
     this->tb_meta.data_info_offset=this->tb_meta.index_info_offset+sizeof(this->idx_tb_info);
     //初始化 index_table_info
     this->idx_tb_info.clause_num=0;
@@ -129,7 +130,7 @@ int DBMGR::CreateTable(char * tbname,CreateAttr *attr){
     write(this->fd,&fst_index_storage,sizeof(fst_index_storage));
     write(this->fd,&fst_data_storage,sizeof(fst_data_storage));
     
-    this->cur_offset_end=lseek(this->fd,0,SEEK_END);
+    // this->cur_offset_end=lseek(this->fd,0,SEEK_END);
 }
 
 int DBMGR::Insert(char * tbname,InsertColVal *col_val){
@@ -139,7 +140,7 @@ int DBMGR::Insert(char * tbname,InsertColVal *col_val){
     
     // 建立 row_item 数组，暂存数据
     row_item row_itm[this->data_tb.col_num];
-    void *primary=NULL;
+    val_union *primary=NULL;
     for(int i=0;i<this->data_tb.col_num;i++)
     {
         while(true)
@@ -238,9 +239,13 @@ int DBMGR::Insert(char * tbname,InsertColVal *col_val){
                     uint hashed=Hash::Murmur(primary,sizeof(val_union))%27;
 
                     // 将该行加入索引树
-                    this->Distribute(hashed,idx_item.tree,
+                    // this->Distribute(hashed,idx_item.tree,
+                    //     this->data_tb.storage_table[this->data_tb.storage_num-1]
+                    //         .cur_offset-sizeof(row_item));
+                    this->Distribute(primary,hashed,&idx_item,
                         this->data_tb.storage_table[this->data_tb.storage_num-1]
                             .cur_offset-sizeof(row_item));
+
 
                     // 将 idx_item 写入dbFile
                     if(lseek(this->fd,this->idx_tb.item_info[j].offset,SEEK_SET)==-1)
@@ -1395,7 +1400,7 @@ int DBMGR::Update(char * tbname,char *colname,val_union colvalue,UpdataCondi *co
                 row_itm[i].flags&&ATTR::INDEX==ATTR::INDEX)
                 {
                     uint hashed=Hash::Murmur(&colvalue,sizeof(val_union))%27;
-                    this->Distribute(hashed,idx_itm.tree,offset_final.top());
+                    this->Distribute(&colvalue,hashed,&idx_itm,offset_final.top());
                 }
 
                 // 将 索引 写回 DBFile
@@ -1915,3 +1920,12 @@ int DBMGR::DropRow(char * tbname,DropRowCondi *condi){
 //     // 删除表
 //     // 如果删除文件中间的内容，填0？还是想办法形成文件空洞？
 // }
+
+void DBMGR::Close()
+{
+    if(close(this->fd)==-1)
+        pWarn("Close Fd Failed");
+    else
+        printf("Close Success\n");
+    
+}

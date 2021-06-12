@@ -76,10 +76,10 @@ typedef struct InsertColVal{
 }InsertColVal;
 
 
-typedef struct SelectStruct{
-    SelectCol *column;
-    SelectCondi condition;
-}SelectStruct;
+// typedef struct SelectStruct{
+//     SelectCol *column;
+//     SelectCondi condition;
+// }SelectStruct;
 
 
 typedef struct SelectCol{
